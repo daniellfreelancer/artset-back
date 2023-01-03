@@ -1,12 +1,19 @@
 const Email = require('../models/emailModel');
 const Joi = require('joi');
 
+const subsValidator = Joi.object({
+    "email": Joi.string().email().messages({
+        'string.empty': 'Escriba su correo electrónico',
+        'string.email': 'Debe introducir una dirección de correo electrónico válida'
+    })
+})
 
 const emailController = {
     newsletter : async (req, res) =>{
         let { email } = req.body;
 
         try {
+            await subsValidator.validateAsync(req.body)
             let suscriber = await Email.findOne({email});
 
             if(!suscriber){
