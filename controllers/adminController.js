@@ -1,6 +1,7 @@
 const AdminUsers = require('../models/adminModel');
 const Joi = require('joi')
-const bcryptjs = require('bcryptjs')
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 
 const adminUserCreateValidator = Joi.object({
@@ -95,6 +96,14 @@ const adminController = {
 
             let adminUser = await AdminUsers.findOne({ email })
 
+            const token = jwt.sign(
+                {
+                    id: adminUser._id,
+                    role: adminUser.role
+                },
+                process.env.KEY_JWT,
+                { expiresIn: 60 * 60 * 24 })
+
             if(!adminUser) {
                 res.status(404).json({
                     message: 'El usuario no existe, por favor regístrese',
@@ -119,7 +128,8 @@ const adminController = {
                             message: 'Inicio de sesión exitoso',
                             success: true,
                             response: {
-                                user: adminlogin
+                                user: adminlogin,
+                                token
                             }
                         })
                     } else {
@@ -146,7 +156,8 @@ const adminController = {
                             message: 'Iniciar sesión con éxito desde Google',
                             success: true,
                             response: {
-                                user: adminlogin
+                                user: adminlogin,
+                                token: token
                             }
                         })
                     } else {
